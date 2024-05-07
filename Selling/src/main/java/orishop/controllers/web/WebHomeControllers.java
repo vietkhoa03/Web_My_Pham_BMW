@@ -17,6 +17,7 @@ import orishop.services.AccountServiceImpl;
 import orishop.services.IAccountService;
 import orishop.util.Constant;
 import orishop.util.Email;
+import orishop.util.InputSanitizer;
 
 @WebServlet(urlPatterns = { "/web/login", "/web/register", "/web/forgotpass", "/web/waiting", "/web/VerifyCode",
 		"/web/logout" })
@@ -55,6 +56,10 @@ public class WebHomeControllers extends HttpServlet {
 		if (cookies != null) {
 			for (Cookie cookie : cookies) {
 				if (Constant.COOKIE_REMEBER.equals(cookie.getName())) {
+					// Sanitize the cookie value to remove potential CRLF characters
+                    String sanitizedValue = InputSanitizer.sanitizeInput(cookie.getValue());
+                    cookie.setValue(sanitizedValue);
+                    
 					cookie.setMaxAge(0);
 					resp.addCookie(cookie);
 				}
@@ -104,6 +109,9 @@ public class WebHomeControllers extends HttpServlet {
 	}
 
 	private void saveRememberMe(HttpServletResponse resp, String username) {
+		// Sanitize the username parameter to remove potential CRLF characters
+        String sanitizedUsername = InputSanitizer.sanitizeInput(username);
+
 		Cookie cookie = new Cookie(Constant.COOKIE_REMEBER, username);
 		cookie.setMaxAge(30 * 60);
 		resp.addCookie(cookie);
@@ -173,6 +181,7 @@ public class WebHomeControllers extends HttpServlet {
 		String password = req.getParameter("password");
 		boolean isRememberMe = false;
 		String remember = req.getParameter("remember");
+		
 
 		if ("on".equals(remember)) {
 			isRememberMe = true;
